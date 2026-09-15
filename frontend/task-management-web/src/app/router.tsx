@@ -1,11 +1,15 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
+import { ProtectedRoute } from '../features/auth/ProtectedRoute'
+import { RequireRole } from '../features/auth/RequireRole'
 import { AppShellLayout } from '../layouts/AppShellLayout'
+import { AccessDeniedPage } from '../pages/AccessDeniedPage'
 import { DashboardPage } from '../pages/DashboardPage'
 import { LoginPage } from '../pages/LoginPage'
 import { ProjectListPage } from '../pages/ProjectListPage'
 import { TaskDetailsPage } from '../pages/TaskDetailsPage'
 import { TaskListPage } from '../pages/TaskListPage'
+import { UserDetailsPage } from '../pages/UserDetailsPage'
 import { UserListPage } from '../pages/UserListPage'
 
 const router = createBrowserRouter([
@@ -14,8 +18,16 @@ const router = createBrowserRouter([
     element: <LoginPage />,
   },
   {
+    path: '/unauthorized',
+    element: <AccessDeniedPage />,
+  },
+  {
     path: '/',
-    element: <AppShellLayout />,
+    element: (
+      <ProtectedRoute>
+        <AppShellLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         index: true,
@@ -23,11 +35,27 @@ const router = createBrowserRouter([
       },
       {
         path: 'users',
-        element: <UserListPage />,
+        element: (
+          <RequireRole allowedRoles={['Admin']}>
+            <UserListPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: 'users/:userId',
+        element: (
+          <RequireRole allowedRoles={['Admin']}>
+            <UserDetailsPage />
+          </RequireRole>
+        ),
       },
       {
         path: 'projects',
-        element: <ProjectListPage />,
+        element: (
+          <RequireRole allowedRoles={['Admin', 'ProjectManager']}>
+            <ProjectListPage />
+          </RequireRole>
+        ),
       },
       {
         path: 'tasks',
